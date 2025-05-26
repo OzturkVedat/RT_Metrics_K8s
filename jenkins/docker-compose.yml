@@ -1,0 +1,21 @@
+services:
+  jenkins:
+    build: .
+    container_name: jenkins
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ~/.kube:/root/.kube
+      - ~/.minikube:/root/.minikube
+      - /usr/local/bin/kubectl:/usr/local/bin/kubectl
+      - /usr/local/bin/helm:/usr/local/bin/helm
+      - /usr/local/bin/minikube:/usr/local/bin/minikube
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+    restart: unless-stopped
+
+volumes:
+  jenkins_home:
