@@ -10,12 +10,10 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ~/.kube:/root/.kube
       - ~/.minikube:/root/.minikube
-      - /usr/local/bin/kubectl:/usr/local/bin/kubectl
-      - /usr/local/bin/helm:/usr/local/bin/helm
-      - /usr/local/bin/minikube:/usr/local/bin/minikube
     environment:
       - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
     restart: unless-stopped
+    user: root
 
 volumes:
   jenkins_home:

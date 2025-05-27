@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     environment {
+        GIT_REPO_URL= "https://github.com/OzturkVedat/RT_Metrics_K8s.git"
         IMAGE_NAME = 'producer'
         IMAGE_TAG = 'latest'
         DOCKERFILE_PATH = 'services/producer'
@@ -9,8 +10,17 @@ pipeline {
         RELEASE_NAME = 'producer'
         NAMESPACE = 'dev'
     }
+    triggers{
+        pollSCM('* * * * *')        // every minute
+    }
 
     stages {
+        stage("Checkout Repo"){
+            steps{
+                git branch: "main", url: "${GIT_REPO_URL}"
+            }
+        }
+
         stage('Verify Tools') {
             steps {
                 sh 'docker --version'
