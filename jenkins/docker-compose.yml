@@ -10,6 +10,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ~/.kube:/root/.kube
       - ~/.minikube:/root/.minikube
+      - ~/Desktop/RT_Metrics_K8s:/workspace # mount project folder (we'll do full local)
     environment:
       - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
     restart: unless-stopped
