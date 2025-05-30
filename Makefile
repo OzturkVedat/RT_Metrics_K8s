@@ -1,0 +1,26 @@
+start:
+	minikube start --driver=docker
+
+status:
+	minikube status
+
+ports:
+	kubectl get svc -n dev
+
+use-context:
+	kubectl config use-context minikube
+
+pods:
+	kubectl get pods --namespace=dev
+
+deploy:
+	chmod +x deploy.sh && ./deploy.sh
+	
+lint:
+	helm lint charts/producer
+
+jenkins:
+	minikube service jenkins -n dev
+
+metrics:
+	curl http://192.168.49.2:30155/metrics	

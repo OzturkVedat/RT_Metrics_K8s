@@ -11,35 +11,47 @@ pipeline {
     }
 
     stages {
-        stage('Run Pipeline from Local Project Folder') {
+        stage('Show Versions') {
             steps {
-                dir('/workspace') {
-                    script {
-                        sh 'docker --version'
-                        sh 'minikube version'
-                        sh 'kubectl version --client'
-                        sh 'helm version'
+                sh 'docker --version'
+                sh 'kubectl version --short'
+                sh 'helm version'
+            }
+        }
 
-                        sh "kubectl get namespace ${NAMESPACE} || kubectl create namespace ${NAMESPACE}"
+        stage('Checkout Code'){
+            steps{
+                git url: 'https://github.com/OzturkVedat/RT_Metrics_K8s.git', branch: 'main'
+            }
+        }
 
-                        echo "Building Docker image: ${IMAGE_NAME}:${IMAGE_TAG}"
-                        sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERFILE_PATH}"
+        stage('Ensure Namespace') {
+            steps {
+                sh "kubectl get namespace ${NAMESPACE} || kubectl create namespace ${NAMESPACE}"
+            }
+        }
 
-                        echo 'Loading image to Minikube..'
-                        sh "minikube image load ${IMAGE_NAME}:${IMAGE_TAG}"
+        stage('Build Docker Image') {
+            steps {
+                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERFILE_PATH}"
+            }
+        }
 
-                        echo 'Deploying with Helm...'
-                        sh """
-                        helm upgrade --install ${RELEASE_NAME} ${CHART_PATH} \
-                          --namespace ${NAMESPACE} \
-                          --set image.repository=${IMAGE_NAME} \
-                          --set image.tag=${IMAGE_TAG} \
-                          --set image.pullPolicy=IfNotPresent
-                        """
+        stage('Deploy with Helm') {
+            steps {
+                sh """
+                helm upgrade --install ${RELEASE_NAME} ${CHART_PATH} \
+                  --namespace ${NAMESPACE} \
+                  --set image.repository=${IMAGE_NAME} \
+                  --set image.tag=${IMAGE_TAG} \
+                  --set image.pullPolicy=IfNotPresent
+                """
+            }
+        }
 
-                        sh "kubectl rollout status deployment/${RELEASE_NAME} -n ${NAMESPACE} --timeout=60s"
-                    }
-                }
+        stage('Check Rollout') {
+            steps {
+                sh "kubectl rollout status deployment/${RELEASE_NAME} -n ${NAMESPACE} --timeout=60s"
             }
         }
     }
