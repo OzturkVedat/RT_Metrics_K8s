@@ -24,23 +24,25 @@ helm upgrade --install kafka bitnami/kafka \
   --set resources.requests.memory=512Mi \
   --set resources.requests.cpu=500m \
   --set resources.limits.memory=1024Mi \
-  --set resources.limits.cpu=1
+  --set resources.limits.cpu=1  \
+  --set service.type=ClusterIP \
+  --set listeners.client.protocol=PLAINTEXT \
+  --set advertisedListeners[0].name=CLIENT \
+  --set advertisedListeners[0].advertisedHost=kafka \
+  --set advertisedListeners[0].advertisedPort=9092
 
-helm upgrade --install rabbitmq bitnami/rabbitmq \
-  --version 16.0.3 \
-  -n $NAMESPACE \
-  --set auth.username=guest \
-  --set auth.password=guest \
-  --set auth.erlangCookie=secretcookie \
-  --set persistence.enabled=false \
-  --set resources.requests.memory=256Mi \
-  --set resources.requests.cpu=250m \
-  --set resources.limits.memory=512Mi \
-  --set resources.limits.cpu=500m
+helm upgrade --install pushgateway prometheus-community/prometheus-pushgateway \
+  --namespace $NAMESPACE \
+  --version 3.3.0 \
+  --set service.type=NodePort \
+  --set service.nodePort=30910 \
+  --set resources.requests.memory=128Mi \
+  --set resources.requests.cpu=100m
 
-# build producer image into Minikube
+# build images into Minikube
 eval $(minikube docker-env)
 docker build -t producer:latest services/producer
+docker build -t consumer:latest services/consumer
 
 helm upgrade --install producer ./charts/producer -n $NAMESPACE 
-
+helm upgrade --install consumer ./charts/consumer -n $NAMESPACE

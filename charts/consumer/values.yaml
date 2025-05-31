@@ -1,0 +1,37 @@
+replicaCount: 1
+
+image:
+  repository: consumer
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+
+service:
+  type: NodePort
+  port: 5001
+  nodePort: 31001
+
+ingress:
+  enabled: false
+  
+resources: {}
+
+# This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

@@ -17,10 +17,11 @@ deploy:
 	chmod +x deploy.sh && ./deploy.sh
 	
 lint:
-	helm lint charts/producer
+	helm lint charts/consumer
 
-jenkins:
-	minikube service jenkins -n dev
+logs:
+	kubectl logs producer-66fd9dbc6f-bvhzm -n dev
 
 metrics:
 	curl http://192.168.49.2:30155/metrics	
+
