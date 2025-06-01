@@ -2,18 +2,6 @@ NAMESPACE=dev
 
 kubectl create namespace $NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
 
-helm upgrade --install jenkins jenkins/jenkins \
-  --version 5.8.53 \
-  -n $NAMESPACE \
-  --set controller.serviceType=NodePort \
-  --set controller.service.nodePort=30080 \
-  --set controller.containerPort=8080 \
-  --set controller.resources.requests.memory=512Mi \
-  --set controller.resources.requests.cpu=500m \
-  --set controller.sidecars.configAutoReload.enabled=false \
-  --set controller.initContainers="" \
-  --set persistence.enabled=false
-
 helm upgrade --install kafka bitnami/kafka \
   --version 32.2.8 \
   -n $NAMESPACE \

@@ -6,6 +6,7 @@ from kafka import KafkaConsumer
 from kafka.errors import KafkaError, NoBrokersAvailable
 from prometheus_client import CollectorRegistry, Gauge, push_to_gateway
 
+logging.Formatter.converter = time.localtime
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
 )
@@ -25,9 +26,9 @@ def create_consumer():
             consumer = KafkaConsumer(
                 KAFKA_TOPIC,
                 bootstrap_servers=BS_SERVERS,
-                auto_offset_reset="earliest",
-                enable_auto_commit=False,
-                group_id="sensor-group",
+                group_id="iot-dashboard",
+                auto_offset_reset="latest",
+                enable_auto_commit=True,  # track progress
                 value_deserializer=lambda x: json.loads(x.decode("utf-8")),
             )
             logging.info("Kafka consumer connected.")
@@ -46,10 +47,10 @@ logging.info("Entering polling loop...")
 
 try:
     while True:
-        records = consumer.poll(timeout_ms=2000)
+        records = consumer.poll(timeout_ms=3000)
         if not records:
             logging.info("No messages in this poll cycle.")
-            time.sleep(1)
+            time.sleep(2)
             continue
 
         for tp, messages in records.items():
@@ -90,6 +91,8 @@ try:
 
                     consumer.commit()  # mark as processed
 
+                except KafkaError as ke:
+                    logging.error(f"Kafka error: {ke}")
                 except Exception as e:
                     logging.error(f"Error processing message: {e}")
 

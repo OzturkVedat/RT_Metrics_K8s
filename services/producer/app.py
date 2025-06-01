@@ -6,6 +6,7 @@ import json
 from kafka import KafkaProducer
 from kafka.errors import KafkaError, NoBrokersAvailable
 
+logging.Formatter.converter = time.localtime
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
 )
