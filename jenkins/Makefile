@@ -16,6 +16,7 @@ run:
 		-v jenkins_home:/var/jenkins_home \
 		-v $(HOST_KUBECONFIG):/root/.kube \
 		-v /var/run/docker.sock:/var/run/docker.sock \
+		-e JAVA_OPTS=-Djenkins.install.runSetupWizard=false \
 		$(IMAGE_NAME)
 
 stop:
