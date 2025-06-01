@@ -10,7 +10,7 @@ logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
-BS_SERVERS = ["kafka:9092"]
+BS_SERVERS = ["kafka.dev.svc.cluster.local:9092"]
 KAFKA_TOPIC = "iot-sensor-data"
 
 MAX_PROD_CON_RETRIES = 6

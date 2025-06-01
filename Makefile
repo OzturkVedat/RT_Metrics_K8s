@@ -20,7 +20,7 @@ lint:
 	helm lint charts/consumer
 
 logs:
-	kubectl logs producer-66fd9dbc6f-bvhzm -n dev
+	kubectl logs consumer-58b74884cd-c2c5x -n dev
 
 metrics:
 	curl http://192.168.49.2:30155/metrics	

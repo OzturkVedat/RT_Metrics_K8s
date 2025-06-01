@@ -28,7 +28,7 @@ helm upgrade --install kafka bitnami/kafka \
   --set service.type=ClusterIP \
   --set listeners.client.protocol=PLAINTEXT \
   --set advertisedListeners[0].name=CLIENT \
-  --set advertisedListeners[0].advertisedHost=kafka \
+  --set advertisedListeners[0].advertisedHost=kafka.dev.svc.cluster.local \
   --set advertisedListeners[0].advertisedPort=9092
 
 helm upgrade --install pushgateway prometheus-community/prometheus-pushgateway \
