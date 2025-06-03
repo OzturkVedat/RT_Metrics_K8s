@@ -8,13 +8,14 @@ pipeline {
         CHART_PATH = 'charts/producer'
         RELEASE_NAME = 'producer'
         NAMESPACE = 'dev'
+        KUBECONFIG = '/root/.kube/config'
     }
 
     stages {
         stage('Show Versions') {
             steps {
                 sh 'docker --version'
-                sh 'kubectl version --short'
+                sh 'kubectl version'
                 sh 'helm version'
             }
         }
