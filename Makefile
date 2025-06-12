@@ -7,7 +7,7 @@ status:
 ports:
 	kubectl get svc -n dev
 
-use-context:
+context:
 	kubectl config use-context minikube
 
 pods:
@@ -20,8 +20,6 @@ lint:
 	helm lint charts/consumer
 
 logs:
-	kubectl logs consumer-58b74884cd-5fkqz -n dev
+	kubectl logs consumer-58b74884cd-5rg8k -n dev
 
-metrics:
-	curl http://192.168.49.2:30155/metrics	
 

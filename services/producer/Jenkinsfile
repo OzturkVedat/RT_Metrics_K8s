@@ -4,22 +4,13 @@ pipeline {
     environment {
         IMAGE_NAME = 'producer'
         IMAGE_TAG = 'latest'
-        DOCKERFILE_PATH = 'services/producer'
-        CHART_PATH = 'charts/producer'
+        DOCKERFILE_PATH = '.'
+        CHART_PATH = '../../charts/producer'
         RELEASE_NAME = 'producer'
         NAMESPACE = 'dev'
-        KUBECONFIG = '/root/.kube/config'
     }
 
     stages {
-        stage('Show Versions') {
-            steps {
-                sh 'docker --version'
-                sh 'kubectl version'
-                sh 'helm version'
-            }
-        }
-
         stage('Checkout Code'){
             steps{
                 git url: 'https://github.com/OzturkVedat/RT_Metrics_K8s.git', branch: 'main'
@@ -32,10 +23,13 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build and Load Image to Minikube') {
             steps {
-                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERFILE_PATH}"
-            }
+                sh """
+                    docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERFILE_PATH}
+                    minikube image load ${IMAGE_NAME}:${IMAGE_TAG}
+                """         
+                }
         }
 
         stage('Deploy with Helm') {
