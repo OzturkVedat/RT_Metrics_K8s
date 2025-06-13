@@ -4,20 +4,20 @@ kubectl create namespace $NAMESPACE --dry-run=client -o yaml | kubectl apply -f 
 
 helm upgrade --install kafka bitnami/kafka \
   --version 32.2.8 \
-  -n $NAMESPACE \
+  -n dev \
   --set kraft.enabled=true \
   --set zookeeper.enabled=false \
   --set controller.replicaCount=1 \
-  --set persistence.enabled=false \
-  --set resources.requests.memory=512Mi \
-  --set resources.requests.cpu=500m \
-  --set resources.limits.memory=1024Mi \
-  --set resources.limits.cpu=1  \
   --set service.type=ClusterIP \
   --set listeners.client.protocol=PLAINTEXT \
-  --set advertisedListeners[0].name=CLIENT \
+  --set advertisedListeners[0].name=PLAINTEXT \
   --set advertisedListeners[0].advertisedHost=kafka.dev.svc.cluster.local \
-  --set advertisedListeners[0].advertisedPort=9092
+  --set advertisedListeners[0].advertisedPort=9092 \
+  --set extraEnvVars[0].name=KAFKA_CFG_LISTENERS \
+  --set extraEnvVars[0].value=PLAINTEXT://0.0.0.0:9092 \
+  --set configurationOverrides["offsets.topic.replication.factor"]=1 \
+  --set configurationOverrides["transaction.state.log.replication.factor"]=1 \
+  --set configurationOverrides["transaction.state.log.min.isr"]=1
 
 helm upgrade --install pushgateway prometheus-community/prometheus-pushgateway \
   --namespace $NAMESPACE \

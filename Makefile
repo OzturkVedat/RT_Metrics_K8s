@@ -19,7 +19,10 @@ deploy:
 lint:
 	helm lint charts/consumer
 
-logs:
-	kubectl logs consumer-58b74884cd-5rg8k -n dev
+k-logs:
+	kubectl logs kafka-controller-0 -n dev --tail=50
+
+consumer-conn:
+	kubectl exec -n dev -it consumer-58b74884cd-4xxn4 -- wget --spider kafka.dev.svc.cluster.local:9092
 
 

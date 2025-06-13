@@ -13,8 +13,8 @@ run:
 		-u root \
 		-p 8080:8080 \
 		-v jenkins_home:/var/jenkins_home \
-		-v $(HOME)/.kube:/root/.kube \
-		-v $(HOME)/.minikube:/root/.minikube \
+		-v /mnt/c/Users/user/.kube:/root/.kube \
+		-v /mnt/c/Users/user/.minikube:/root/.minikube \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-e MINIKUBE_HOME=/root \
 		-e JAVA_OPTS=-Djenkins.install.runSetupWizard=false \
