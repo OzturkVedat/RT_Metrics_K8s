@@ -1,3 +1,8 @@
+NAMESPACE=dev
+KAFKA_POD := $(shell kubectl get pods -n $(NAMESPACE) -l app.kubernetes.io/name=kafka -o jsonpath="{.items[0].metadata.name}")
+PRODUCER_POD := $(shell kubectl get pod -n $(NAMESPACE) -l app.kubernetes.io/name=producer -o jsonpath="{.items[0].metadata.name}")
+CONSUMER_POD := $(shell kubectl get pod -n $(NAMESPACE) -l app.kubernetes.io/name=consumer -o jsonpath="{.items[0].metadata.name}")
+
 start:
 	minikube start --driver=docker
 
@@ -9,13 +14,13 @@ status:
 	minikube status
 
 ports:
-	kubectl get svc -n dev
+	kubectl get svc -n $(NAMESPACE)
 
 context:
 	kubectl config use-context minikube
 
 pods:
-	kubectl get pods --namespace=dev
+	kubectl get pods --namespace=$(NAMESPACE)
 
 deploy:
 	chmod +x deploy.sh && ./deploy.sh
@@ -27,21 +32,32 @@ lint:
 	helm lint charts/consumer
 
 k-logs:
-	kubectl logs kafka-controller-0 -n dev --tail=50
+	kubectl logs $(KAFKA_POD) -n $(NAMESPACE) --tail=50
 
 topics:
-	kubectl exec -n dev kafka-controller-0 -- \
-  	kafka-topics.sh --bootstrap-server localhost:9092 --list
+	@kubectl exec -n $(NAMESPACE) $(KAFKA_POD) -- \
+	kafka-topics.sh --bootstrap-server localhost:9092 --list
 
 partitions:
-	kubectl exec -n dev kafka-controller-0 -- \
-  	kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic iot-sensor-data
+	@kubectl exec -n $(NAMESPACE) $(KAFKA_POD) -- \
+	kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic iot-sensor-data
+
+consume-kafka:
+	@echo "📥 Consuming messages from topic 'iot-sensor-data' (new group)..."
+	@kubectl exec -n $(NAMESPACE) -it $(KAFKA_POD) -- \
+	kafka-console-consumer.sh \
+		--bootstrap-server localhost:9092 \
+		--topic iot-sensor-data \
+		--from-beginning \
+		--timeout-ms 10000 \
+		--group debug-consumer-$$RANDOM
 
 c-logs:
-	kubectl logs $$(kubectl get pod -n dev -l app.kubernetes.io/name=consumer -o jsonpath="{.items[0].metadata.name}") -n dev --tail=50
+	@kubectl logs $(CONSUMER_POD) -n $(NAMESPACE) --tail=50
 
 c-connection:
-	kubectl exec -n dev -it $$(kubectl get pod -n dev -l app.kubernetes.io/name=consumer -o jsonpath="{.items[0].metadata.name}") -- wget --spider kafka.dev.svc.cluster.local:9092
+	@kubectl exec -n $(NAMESPACE) -it $(CONSUMER_POD) -- \
+	wget --spider kafka.dev.svc.cluster.local:9092
 
 p-logs:
-	kubectl logs $$(kubectl get pod -n dev -l app.kubernetes.io/name=producer -o jsonpath="{.items[0].metadata.name}") -n dev --tail=50
+	@kubectl logs $(PRODUCER_POD) -n $(NAMESPACE) --tail=50

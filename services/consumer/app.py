@@ -26,15 +26,15 @@ def create_consumer():
             consumer = KafkaConsumer(
                 KAFKA_TOPIC,
                 bootstrap_servers=BS_SERVERS,
-                group_id="iot-dashboard-v2",
+                group_id="iot-consumer",
                 auto_offset_reset="earliest",
                 enable_auto_commit=True,  # track progress
                 value_deserializer=lambda x: json.loads(x.decode("utf-8")),
             )
             logging.info("Kafka consumer connected.")
             return consumer
-        except NoBrokersAvailable as e:
-            logging.error(f"No Kafka brokers available: {e}")
+        except (NoBrokersAvailable, KafkaError) as e:
+            logging.error(f"Kafka/Broker error: {e}")
             time.sleep(RETRY_WAIT)
 
     logging.critical("Could not connect to Kafka after multiple attempts.")
