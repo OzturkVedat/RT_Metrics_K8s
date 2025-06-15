@@ -14,7 +14,7 @@ logging.basicConfig(
 BS_SERVERS = ["kafka.dev.svc.cluster.local:9092"]
 KAFKA_TOPIC = "iot-sensor-data"
 
-MAX_PROD_CON_RETRIES = 6
+MAX_PROD_CON_RETRIES = 10
 MAX_SEND_RETRIES = 5
 RETRY_WAIT = 10
 

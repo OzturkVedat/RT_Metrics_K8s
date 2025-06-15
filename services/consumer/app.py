@@ -15,8 +15,8 @@ KAFKA_TOPIC = "iot-sensor-data"
 BS_SERVERS = ["kafka.dev.svc.cluster.local:9092"]
 PG_ADDRESS = "pushgateway-prometheus-pushgateway:9091"
 
-MAX_KAFKA_RETRIES = 5
-RETRY_WAIT = 5
+MAX_KAFKA_RETRIES = 10
+RETRY_WAIT = 10
 
 
 def create_consumer():
@@ -26,8 +26,8 @@ def create_consumer():
             consumer = KafkaConsumer(
                 KAFKA_TOPIC,
                 bootstrap_servers=BS_SERVERS,
-                group_id="iot-dashboard",
-                auto_offset_reset="latest",
+                group_id="iot-dashboard-v2",
+                auto_offset_reset="earliest",
                 enable_auto_commit=True,  # track progress
                 value_deserializer=lambda x: json.loads(x.decode("utf-8")),
             )
@@ -46,55 +46,37 @@ consumer = create_consumer()
 logging.info("Entering polling loop...")
 
 try:
-    while True:
-        records = consumer.poll(timeout_ms=3000)
-        if not records:
-            logging.info("No messages in this poll cycle.")
-            time.sleep(2)
+    for message in consumer:
+        data = message.value
+        logging.info(f"Received: {data}")
+
+        device_id = data.get("device_id")
+        if not device_id:
+            logging.error("Missing device_id")
             continue
 
-        for tp, messages in records.items():
-            for message in messages:
-                try:
-                    data = message.value
-                    logging.info(f"Received: {data}")
+        temp = float(data.get("temperature", 0))
+        hum = float(data.get("humidity", 0))
 
-                    device_id = data.get("device_id")
-                    if not device_id:
-                        logging.error("Missing device_id")
-                        continue
+        registry = CollectorRegistry()
+        temp_metric = Gauge(
+            "iot_device_temperature",
+            "Temp °C",
+            ["device_id"],
+            registry=registry,
+        )
+        hum_metric = Gauge(
+            "iot_device_humidity",
+            "Humidity %",
+            ["device_id"],
+            registry=registry,
+        )
 
-                    temp = float(data.get("temperature", 0))
-                    hum = float(data.get("humidity", 0))
+        temp_metric.labels(device_id=device_id).set(temp)
+        hum_metric.labels(device_id=device_id).set(hum)
 
-                    registry = CollectorRegistry()
-                    temp_metric = Gauge(
-                        "iot_device_temperature",
-                        "Temp °C",
-                        ["device_id"],
-                        registry=registry,
-                    )
-                    hum_metric = Gauge(
-                        "iot_device_humidity",
-                        "Humidity %",
-                        ["device_id"],
-                        registry=registry,
-                    )
-
-                    temp_metric.labels(device_id=device_id).set(temp)
-                    hum_metric.labels(device_id=device_id).set(hum)
-
-                    push_to_gateway(
-                        PG_ADDRESS, job="iot_kafka_consumer", registry=registry
-                    )
-                    logging.info(f"Pushed to Prometheus: temp={temp}, hum={hum}")
-
-                    consumer.commit()  # mark as processed
-
-                except KafkaError as ke:
-                    logging.error(f"Kafka error: {ke}")
-                except Exception as e:
-                    logging.error(f"Error processing message: {e}")
+        push_to_gateway(PG_ADDRESS, job="iot_kafka_consumer", registry=registry)
+        logging.info(f"Pushed to Prometheus: temp={temp}, hum={hum}")
 
 except KeyboardInterrupt:
     logging.info("Shutting down consumer...")
