@@ -43,7 +43,7 @@ partitions:
 	kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic iot-sensor-data
 
 consume-kafka:
-	@echo "📥 Consuming messages from topic 'iot-sensor-data' (new group)..."
+	@echo "Consuming messages from topic..."
 	@kubectl exec -n $(NAMESPACE) -it $(KAFKA_POD) -- \
 	kafka-console-consumer.sh \
 		--bootstrap-server localhost:9092 \
