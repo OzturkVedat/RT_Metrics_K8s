@@ -5,7 +5,7 @@ kubectl create namespace $NAMESPACE --dry-run=client -o yaml | kubectl apply -f 
 helm upgrade --install kafka bitnami/kafka \
   --version 32.2.8 \
   -n $NAMESPACE \
-  -f kafka-conf.yaml
+  -f kafka-conf.yaml --debug
 
 helm upgrade --install pushgateway prometheus-community/prometheus-pushgateway \
   --namespace $NAMESPACE \
@@ -20,11 +20,11 @@ eval $(minikube docker-env)
 docker build -t producer:latest services/producer
 docker build -t consumer:latest services/consumer
 
-echo "Waiting for Kafka to be ready..."
+echo "Waiting for Kafka to be ready.."
 kubectl wait --for=condition=Ready pod -n $NAMESPACE -l app.kubernetes.io/name=kafka --timeout=180s
 
-echo "Creating topic if it doesn't exist..."
-kubectl exec -n $NAMESPACE kafka-controller-0 -- \
+echo "Creating topic..."
+kubectl exec -n $NAMESPACE kafka-0 -- \
   kafka-topics.sh \
     --bootstrap-server localhost:9092 \
     --create \

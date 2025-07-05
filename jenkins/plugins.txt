@@ -1,5 +1,0 @@
-workflow-aggregator
-pipeline-stage-view
-git
-docker-workflow
-kubernetes-cli

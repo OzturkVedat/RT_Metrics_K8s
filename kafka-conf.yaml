@@ -13,6 +13,7 @@ broker:
     advertised.listeners: PLAINTEXT://kafka.dev.svc.cluster.local:9092
     listeners: PLAINTEXT://0.0.0.0:9092
     listener.security.protocol.map: PLAINTEXT:PLAINTEXT
+    inter.broker.listener.name: PLAINTEXT
 
 service:
   type: ClusterIP

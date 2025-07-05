@@ -25,8 +25,11 @@ pods:
 deploy:
 	chmod +x deploy.sh && ./deploy.sh
 
+init:
+	@make start && make deploy	
+
 redeploy:
-	@minikube delete && make start && make deploy
+	@minikube delete && make init
 
 lint:
 	helm lint charts/consumer
